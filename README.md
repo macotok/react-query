@@ -40,7 +40,7 @@ Server State
 12. Optimistic updates
 13. Axios Interceptor
 
-## 従来の data fetching の書き方
+## 従来の fetching data
 
 ```
 const [isLoading, setIsLoading] = useState(true);
@@ -59,9 +59,88 @@ if (isLoading) {
 
 return (
   <>
-    <h2>Super Heroes Page</h2>
     {data.map((hero) => {
       return <div>{hero.name}</div>;
+    })}
+  </>
+);
+```
+
+## how to use react-query
+
+### setup
+
+- root component(app.js) で QueryClientProvider を wrap する
+
+```
+import { QueryClient, QueryClientProvider } from 'react-query';
+const queryClient = new QueryClient();
+
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+    .
+    .
+    .
+    </QueryClientProvider>
+  )
+}
+```
+
+### useQuery
+
+- useQuery hook の第一引数には unique key を
+- 第二引数には promise を書く
+
+```
+useQuery('super-heroes', () => {
+  return axios.get('http://localhost:4000/superheroes')
+})
+```
+
+- useQuery hook で返ってくる値([公式](https://react-query-v3.tanstack.com/reference/useQuery#_top))
+
+```
+const {
+  data,
+  dataUpdatedAt,
+  error,
+  errorUpdatedAt,
+  failureCount,
+  isError,
+  isFetched,
+  isFetchedAfterMount,
+  isFetching,
+  isIdle,
+  isLoading,
+  isLoadingError,
+  isPlaceholderData,
+  isPreviousData,
+  isRefetchError,
+  isRefetching,
+  isStale,
+  isSuccess,
+  refetch,
+  remove,
+  status,
+} = useQuery
+```
+
+### use-query で fetching data
+
+```
+const { isLoading, data } = useQuery('super-heroes', () => {
+  return axios.get('http://localhost:4000/superheroes');
+});
+
+if (isLoading) {
+  return <h2>Loading...</h2>;
+}
+
+return (
+  <>
+    {data.data.map((hero) => {
+      return <div key={hero.name}>{hero.name}</div>;
     })}
   </>
 );
