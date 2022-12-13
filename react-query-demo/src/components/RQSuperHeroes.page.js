@@ -18,7 +18,7 @@ export const RQSuperHeroesPage = () => {
     <>
       <h2>React Query Super Heroes Page</h2>
       {data.data.map((hero) => {
-        return <div key={hero.name}>{hero.name}</div>;
+        return <div key={hero.id}>{hero.name}</div>;
       })}
     </>
   );

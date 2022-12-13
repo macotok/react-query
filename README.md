@@ -71,7 +71,7 @@ if (error) {
 return (
   <>
     {data.map((hero) => {
-      return <div>{hero.name}</div>;
+      return <div key={hero.id}>{hero.name}</div>;
     })}
   </>
 );
@@ -96,6 +96,26 @@ function App() {
     </QueryClientProvider>
   )
 }
+```
+
+### ReactQueryDevtools
+
+- react-query 専門の開発ツール
+- react-query の内部構造を可視化するので、デバッグにも有用
+- React Native はサポートしていない
+- デフォルトで `process.env.NODE_ENV === 'development'` のときのみバンドルするように設定されている
+
+```
+import { ReactQueryDevtools } from 'react-query/devtools';
+
+return (
+  <QueryClientProvider client={queryClient}>
+    .
+    .
+    .
+    <ReactQueryDevtools initialIsOpen={false} position="bottom-right" />
+  </QueryClientProvider>
+)
 ```
 
 ### useQuery
@@ -155,7 +175,7 @@ if (isError) {
 return (
   <>
     {data.data.map((hero) => {
-      return <div key={hero.name}>{hero.name}</div>;
+      return <div key={hero.id}>{hero.name}</div>;
     })}
   </>
 );
