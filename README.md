@@ -14,6 +14,10 @@ Why?
 - 状態管理ライブラリは静的なデータを扱うには適している
 - 一方で、非同期処理を扱うには適していない、そのため middleware ライブラリが別途必要
 
+Feature
+
+- cache が効くので既に fetch した data は、cache された data から取り出す。もし data が更新されたら background で refetch して新しい data を表示する。 `isFetching` で確認できる
+
 ## Client vs Server State
 
 Client State
@@ -178,5 +182,23 @@ return (
       return <div key={hero.id}>{hero.name}</div>;
     })}
   </>
+);
+```
+
+### cache time
+
+- default の cache time は 5 minutes
+
+```
+const fetchSuperHeroes = () => {
+  return axios.get('http://localhost:4000/superheroes');
+};
+
+const { isLoading, data, isError, error } = useQuery(
+  'super-heroes',
+  fetchSuperHeroes,
+  {
+    cacheTime: 5000, // default 5 minutes
+  }
 );
 ```
