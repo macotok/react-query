@@ -250,3 +250,44 @@ const { isLoading, data, isError, error } = useQuery(
   }
 );
 ```
+
+### useQuery on click
+
+- click 時のみ data fetch する処理
+- option で `enabled`　を `false` に指定すると通常は fetch しない処理
+- click イベントに `refetch` を指定すると click 時に data fetch が行われる
+- loading 表示は `isFetching` で制御する
+
+```
+const fetchSuperHeroes = () => {
+  return axios.get('http://localhost:4000/superheroes');
+};
+
+export const RQSuperHeroesPage = () => {
+  const { isLoading, data, isError, error, refetch, isFetching } = useQuery(
+    'super-heroes',
+    fetchSuperHeroes,
+    {
+      enabled: false,
+    }
+  );
+
+  if (isLoading || isFetching) {
+    return <h2>Loading...</h2>;
+  }
+
+  if (isError) {
+    return <h2>{error.message}</h2>;
+  }
+
+  return (
+    <>
+      <h2>React Query Super Heroes Page</h2>
+      <button onClick={refetch}>fetch</button>
+      {data?.data.map((hero) => {
+        return <div key={hero.id}>{hero.name}</div>;
+      })}
+    </>
+  );
+};
+```
