@@ -321,3 +321,36 @@ export const RQSuperHeroesPage = () => {
   );
 };
 ```
+
+### Data Transformation
+
+- option の `select` メソッドの引数に fetch の response data が入る
+- その data を処理して返した値が useQuery が返す `data` となる
+
+```
+const fetchSuperHeroes = () => {
+ return axios.get('http://localhost:4000/superheroes');
+};
+
+export const RQSuperHeroesPage = () => {
+ const { isLoading, data, isError, error } = useQuery(
+   'super-heroes',
+   fetchSuperHeroes,
+   {
+     select: (data) => {
+       const superHeroNames = data.data.map((hero) => hero.name);
+       return superHeroNames;
+     },
+   }
+ );
+
+ return (
+   <>
+     <h2>React Query Super Heroes Page</h2>
+     {data.map((heroName) => {
+       return <div key={heroName}>{heroName}</div>;
+     })}
+   </>
+ );
+};
+```

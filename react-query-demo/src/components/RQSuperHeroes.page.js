@@ -20,6 +20,10 @@ export const RQSuperHeroesPage = () => {
     {
       onSuccess,
       onError,
+      select: (data) => {
+        const superHeroNames = data.data.map((hero) => hero.name);
+        return superHeroNames;
+      },
     }
   );
 
@@ -34,8 +38,8 @@ export const RQSuperHeroesPage = () => {
   return (
     <>
       <h2>React Query Super Heroes Page</h2>
-      {data?.data.map((hero) => {
-        return <div key={hero.id}>{hero.name}</div>;
+      {data.map((heroName) => {
+        return <div key={heroName}>{heroName}</div>;
       })}
     </>
   );
