@@ -188,7 +188,7 @@ return (
 ### cache time
 
 - data をキャッシュとして保持する時間
-- default の cache time は 5 minutes
+- default の cache time は `5 minutes`
 
 ```
 const fetchSuperHeroes = () => {
@@ -207,7 +207,7 @@ const { isLoading, data, isError, error } = useQuery(
 ### stale time
 
 - refetch する時間を指定。時間内では fetch せずにキャッシュのデータを返す
-- default の stale time は 0
+- default の stale time は `0`
 
 ```
 const { isLoading, data, isError, error } = useQuery(
@@ -215,6 +215,22 @@ const { isLoading, data, isError, error } = useQuery(
   fetchSuperHeroes,
   {
     staleTime: 30000, // default 0
+  }
+);
+```
+
+### refetch するタイミングを制御
+
+- refetchOnWindowFocus -> default `true`
+- refetchOnMount -> default `true`
+
+```
+const { isLoading, data, isError, error } = useQuery(
+  'super-heroes',
+  fetchSuperHeroes,
+  {
+    refetchOnWindowFocus: false,
+    refetchOnMount: false
   }
 );
 ```
