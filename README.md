@@ -291,3 +291,33 @@ export const RQSuperHeroesPage = () => {
   );
 };
 ```
+
+### Success and Error Callbacks
+
+- option に `onSuccess`、`onError` で data fething を受けてのハンドリング処理を行う。例えば toast を表示、ダイアログを表示、一覧を更新など
+- callback 関数の引数にはそれぞれ `data`、`error`が入る
+
+```
+const fetchSuperHeroes = () => {
+  return axios.get('http://localhost:4000/superheroes');
+};
+
+export const RQSuperHeroesPage = () => {
+  const onSuccess = (data) => {
+    console.log({ data }); // Axios Response
+  };
+
+  const onError = (error) => {
+    console.log({ error }); // Axios Error
+  };
+
+  const { isLoading, data, isError, error } = useQuery(
+    'super-heroes',
+    fetchSuperHeroes,
+    {
+      onSuccess,
+      onError,
+    }
+  );
+};
+```

@@ -6,15 +6,24 @@ const fetchSuperHeroes = () => {
 };
 
 export const RQSuperHeroesPage = () => {
-  const { isLoading, data, isError, error, refetch, isFetching } = useQuery(
+  const onSuccess = (data) => {
+    console.log({ data }); // Axios Response
+  };
+
+  const onError = (error) => {
+    console.log({ error }); // Axios Error
+  };
+
+  const { isLoading, data, isError, error } = useQuery(
     'super-heroes',
     fetchSuperHeroes,
     {
-      enabled: false,
+      onSuccess,
+      onError,
     }
   );
 
-  if (isLoading || isFetching) {
+  if (isLoading) {
     return <h2>Loading...</h2>;
   }
 
@@ -25,7 +34,6 @@ export const RQSuperHeroesPage = () => {
   return (
     <>
       <h2>React Query Super Heroes Page</h2>
-      <button onClick={refetch}>fetch</button>
       {data?.data.map((hero) => {
         return <div key={hero.id}>{hero.name}</div>;
       })}
