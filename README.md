@@ -4,7 +4,7 @@
 
 What？
 
-- React アプリケーションの data fetch ライブラリ
+- React アプリケーションの data fetching ライブラリ
 
 Why?
 
@@ -230,7 +230,23 @@ const { isLoading, data, isError, error } = useQuery(
   fetchSuperHeroes,
   {
     refetchOnWindowFocus: false,
-    refetchOnMount: false
+    refetchOnMount: false,
+  }
+);
+```
+
+### refetch interval
+
+- refetchInterval
+- refetchIntervalInBackground -> refetchInterval を設定した場合、ブラウザのタブ/ウィンドウがバックグラウンドにある間、refetch を行う
+
+```
+const { isLoading, data, isError, error } = useQuery(
+  'super-heroes',
+  fetchSuperHeroes,
+  {
+    refetchInterval: 2000,
+    refetchIntervalInBackground: true
   }
 );
 ```
