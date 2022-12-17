@@ -187,6 +187,7 @@ return (
 
 ### cache time
 
+- data をキャッシュとして保持する時間
 - default の cache time は 5 minutes
 
 ```
@@ -199,6 +200,21 @@ const { isLoading, data, isError, error } = useQuery(
   fetchSuperHeroes,
   {
     cacheTime: 5000, // default 5 minutes
+  }
+);
+```
+
+### stale time
+
+- refetch する時間を指定。時間内では fetch せずにキャッシュのデータを返す
+- default の stale time は 0
+
+```
+const { isLoading, data, isError, error } = useQuery(
+  'super-heroes',
+  fetchSuperHeroes,
+  {
+    staleTime: 30000, // default 0
   }
 );
 ```
