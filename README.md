@@ -179,7 +179,7 @@ if (isError) {
 
 return (
   <>
-    {data.data.map((hero) => {
+    {data?.data.map((hero) => {
       return <div key={hero.id}>{hero.name}</div>;
     })}
   </>
@@ -291,6 +291,26 @@ export const RQSuperHeroesPage = () => {
     </>
   );
 };
+```
+
+### Dependent Queries
+
+- 複数の fetcher function で、お互いが依存してる場合に option の`enabled` を利用して fetch を制御する
+
+```
+const { data: user } = useQuery(['user', email], () =>
+  fetchUserByEmail(email)
+);
+
+const channelId = user?.data?.channelId;
+
+const { data } = useQuery(
+  ['courses', channelId],
+  () => fetchCoursesByChannelId(channelId),
+  {
+    enabled: !!channelId,
+  }
+);
 ```
 
 ### Success and Error Callbacks
