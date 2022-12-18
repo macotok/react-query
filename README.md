@@ -124,7 +124,7 @@ return (
 
 ### useQuery
 
-- useQuery hook の第一引数に unique key
+- useQuery hook の第一引数に query key
 - 第二引数に fetcher 関数
 - 第三引数に option、configure
 
@@ -378,7 +378,7 @@ export const RQSuperHeroesPage = () => {
 
 ### Query By Id
 
-- 詳細画面の data を fetch するとき、useQuery の第一引数を配列にして uniqueKey にする。例：`['super-hero', heroId]`
+- 詳細画面の data を fetch するとき、useQuery の第一引数を配列にして queryKey とする。例：`['super-hero', heroId]`
 - 第二引数の fetcher 関数で dynamic ID を指定
   - fetcher 関数の引数で useQuery の第一引数の queryKey から取得
   - 高階関数で fetcher 関数を定義
@@ -407,7 +407,7 @@ export const useSuperHeroData = (heroId) => {
 ### useQueries
 
 - 複数の useQuery に対応
-- 返り値の `queryKey`に uniqueKey、 `queryFn`に fetcher function、option は `useQuery` と同等
+- 返り値の `queryKey`に queryKey、 `queryFn`に fetcher function、option は `useQuery` と同等
 - response data を配列として返す
 
 ```
@@ -429,7 +429,7 @@ const queryResults = useQueries(
 
 - 詳細画面の data を一覧画面の data から初期値として取得する
 - useQuery の option `initialData` で data を取得する処理を記述
-- `useQueryClient` で取得対象の uniqueKey を指定して data を取得
+- `useQueryClient` で取得対象の queryKey を指定して data を取得
 
 ```
 const queryClient = useQueryClient();
@@ -444,4 +444,20 @@ useQuery(['super-hero', heroId], fetchSuperHero, {
     return undefined;
   },
 });
+```
+
+### Paginated Queries
+
+- useQuery の `queryKey` にページ番号を指定するだけ
+- useQuery の option `keepPreviousData` を `true` にすることで取得済みの data を表示
+
+```
+const [pageNumber, setPageNumber] = useState(1);
+const { isLoading, isError, error, data, isFetching } = useQuery(
+  ['colors', pageNumber],
+  () => fetchColors(pageNumber),
+  {
+    keepPreviousData: true,
+  }
+);
 ```
