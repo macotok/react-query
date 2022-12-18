@@ -424,3 +424,24 @@ const queryResults = useQueries(
   })
 );
 ```
+
+### Initial Query Data
+
+- 詳細画面の data を一覧画面の data から初期値として取得する
+- useQuery の option `initialData` で data を取得する処理を記述
+- `useQueryClient` で取得対象の uniqueKey を指定して data を取得
+
+```
+const queryClient = useQueryClient();
+useQuery(['super-hero', heroId], fetchSuperHero, {
+  initialData: () => {
+    const hero = queryClient
+      .getQueryData('super-heroes')
+      ?.data?.find((hero) => hero.id === parseInt(heroId));
+    if (hero) {
+      return { data: hero };
+    }
+    return undefined;
+  },
+});
+```
