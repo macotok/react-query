@@ -124,8 +124,9 @@ return (
 
 ### useQuery
 
-- useQuery hook の第一引数には unique key を
-- 第二引数には promise を書く
+- useQuery hook の第一引数に unique key
+- 第二引数に fetcher 関数
+- 第三引数に option、configure
 
 ```
 useQuery('super-heroes', () => {
