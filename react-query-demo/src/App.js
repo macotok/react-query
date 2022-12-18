@@ -4,6 +4,7 @@ import { Link, Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from 'react-query';
 
 import { HomePage } from './components/Home.page';
+import { RQSuperHeroPage } from './components/RQSuperHero.page';
 import { RQSuperHeroesPage } from './components/RQSuperHeroes.page';
 import { ReactQueryDevtools } from 'react-query/devtools';
 import { SuperHeroesPage } from './components/SuperHeroes.page';
@@ -30,6 +31,10 @@ function App() {
           </nav>
           <Routes>
             <Route path="/super-heroes" element={<SuperHeroesPage />} />
+            <Route
+              path="/rq-super-heroes/:heroId"
+              element={<RQSuperHeroPage />}
+            />
             <Route path="/rq-super-heroes" element={<RQSuperHeroesPage />} />
             <Route path="/" element={<HomePage />} />
           </Routes>

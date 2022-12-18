@@ -355,3 +355,31 @@ export const RQSuperHeroesPage = () => {
  );
 };
 ```
+
+### Query By Id
+
+- 詳細画面の data を fetch するとき、useQuery の第一引数を配列にして uniqueKey にする。例：`['super-hero', heroId]`
+- 第二引数の fetcher 関数で dynamic ID を指定
+  - fetcher 関数の引数で useQuery の第一引数の queryKey から取得
+  - 高階関数で指定
+
+```
+const fetchSuperHero = ({ queryKey }) => {
+  const heroId = queryKey[1];
+  return axios.get(`http://localhost:4000/superheroes/${heroId}`);
+};
+
+export const useSuperHeroData = (heroId) => {
+  return useQuery(['super-hero', heroId], fetchSuperHero);
+};
+```
+
+```
+const fetchSuperHero = (heroId) => {
+  return axios.get(`http://localhost:4000/superheroes/${heroId}`);
+};
+
+export const useSuperHeroData = (heroId) => {
+  return useQuery(['super-hero', heroId], () => fetchSuperHero(heroId));
+};
+```
