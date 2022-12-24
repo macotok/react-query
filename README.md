@@ -449,7 +449,7 @@ useQuery(['super-hero', heroId], fetchSuperHero, {
 ### Paginated Queries
 
 - useQuery の `queryKey` にページ番号を指定するだけ
-- useQuery の option `keepPreviousData` を `true` にすることで取得済みの data を表示
+- useQuery の option `keepPreviousData` を `true` で取得済みの data を表示
 
 ```
 const [pageNumber, setPageNumber] = useState(1);
@@ -460,4 +460,49 @@ const { isLoading, isError, error, data, isFetching } = useQuery(
     keepPreviousData: true,
   }
 );
+```
+
+### Infinite Queries
+
+- `useQuery` ではなく `useInfiniteQuery` を使用
+- `useInfiniteQuery` の option `getNextPageParam` で infinite 対象 data を制御
+  - fetcher 関数の引数にページ番号の `pageParams`が入る
+  - `useInfiniteQuery`の値`hasNextPage` で button の disabled 判定を行う
+  - `useInfiniteQuery`の値`fetchNextPage` で fetch 処理を行う
+- 取得した data は `data?.pages.map((group)` と `pages` で map を回すので注意
+
+```
+const fetchColors = ({ pageParam = 1 }) => {
+  return axios.get(`http://localhost:4000/colors?_limit=2&_page=${pageParam}`);
+};
+
+const {
+  data,
+  fetchNextPage,
+  hasNextPage,
+} = useInfiniteQuery(['colors'], fetchColors, {
+  getNextPageParam: (lastPage, pages) => {
+    if (pages.length < 4) {
+      return pages.length + 1;
+    } else {
+      return undefined;
+    }
+  },
+});
+
+{data?.pages.map((group, i) => {
+  return (
+    <Fragment key={i}>
+      {group.data.map((color) => (
+        <h2 key={color.id}>
+          {color.id} {color.label}
+        </h2>
+      ))}
+    </Fragment>
+  );
+})}
+
+<button onClick={() => fetchNextPage()} disabled={!hasNextPage}>
+  Load more
+</button>
 ```
