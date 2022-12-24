@@ -23,10 +23,11 @@ export const RQSuperHeroesPage = () => {
     onError
   );
 
-  const { mutate } = useAddSuperHeroData();
+  const { mutate: addHero } = useAddSuperHeroData();
 
   const handleAddHeroClick = () => {
-    mutate({ name, alterEgo });
+    const hero = { name, alterEgo };
+    addHero(hero);
   };
 
   if (isLoading) {

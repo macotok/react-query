@@ -564,3 +564,22 @@ const handleAddHeroClick = () => {
   mutate({ name, alterEgo });
 };
 ```
+
+### Query invalidation
+
+- query の設定を無効化する。例えばボタンを押下したときのみ data fetching していた処理を無効化して、data fetching する
+- `useQueryClient` で特定の query key を指定する
+
+```
+import { useMutation, useQueryClient } from 'react-query';
+
+const useAddSuperHeroData = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation(addSuperHero, {
+    onSuccess: () => {
+      queryClient.invalidateQueries('super-heroes');
+    },
+  });
+};
+```
