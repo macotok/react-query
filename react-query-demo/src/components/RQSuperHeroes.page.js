@@ -1,7 +1,15 @@
+import {
+  useAddSuperHeroData,
+  useSuperHeroesData,
+} from '../hooks/useSuperHeroesData';
+
 import { Link } from 'react-router-dom';
-import { useSuperHeroesData } from '../hooks/useSuperHeroesData';
+import { useState } from 'react';
 
 export const RQSuperHeroesPage = () => {
+  const [name, setName] = useState('');
+  const [alterEgo, setAlterEgo] = useState('');
+
   const onSuccess = (data) => {
     console.log({ data }); // Axios Response
   };
@@ -15,6 +23,12 @@ export const RQSuperHeroesPage = () => {
     onError
   );
 
+  const { mutate } = useAddSuperHeroData();
+
+  const handleAddHeroClick = () => {
+    mutate({ name, alterEgo });
+  };
+
   if (isLoading) {
     return <h2>Loading...</h2>;
   }
@@ -26,6 +40,19 @@ export const RQSuperHeroesPage = () => {
   return (
     <>
       <h2>React Query Super Heroes Page</h2>
+      <div>
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+        <input
+          type="text"
+          value={alterEgo}
+          onChange={(e) => setAlterEgo(e.target.value)}
+        />
+        <button onClick={handleAddHeroClick}>Add Hero</button>
+      </div>
       {data?.data.map((hero) => {
         return (
           <div key={hero.id}>

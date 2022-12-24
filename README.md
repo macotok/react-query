@@ -122,11 +122,12 @@ return (
 )
 ```
 
-### useQuery
+## useQuery
 
 - useQuery hook の第一引数に query key
 - 第二引数に fetcher 関数
 - 第三引数に option、configure
+- `useQuery`、`useQueries`、`useInfiniteQuery`は API GET で利用
 
 ```
 useQuery('super-heroes', () => {
@@ -404,27 +405,6 @@ export const useSuperHeroData = (heroId) => {
 };
 ```
 
-### useQueries
-
-- 複数の useQuery に対応
-- 返り値の `queryKey`に queryKey、 `queryFn`に fetcher function、option は `useQuery` と同等
-- response data を配列として返す
-
-```
-const fetchSuperHero = (heroId) => {
-  return axios.get(`http://localhost:4000/superheroes/${heroId}`);
-};
-
-const queryResults = useQueries(
-  heroIds.map((id) => {
-    return {
-      queryKey: ['super-hero', id],
-      queryFn: () => fetchSuperHero(id),
-    };
-  })
-);
-```
-
 ### Initial Query Data
 
 - 詳細画面の data を一覧画面の data から初期値として取得する
@@ -462,7 +442,28 @@ const { isLoading, isError, error, data, isFetching } = useQuery(
 );
 ```
 
-### Infinite Queries
+## useQueries
+
+- 複数の useQuery に対応
+- 返り値の `queryKey`に queryKey、 `queryFn`に fetcher function、option は `useQuery` と同等
+- response data を配列として返す
+
+```
+const fetchSuperHero = (heroId) => {
+  return axios.get(`http://localhost:4000/superheroes/${heroId}`);
+};
+
+const queryResults = useQueries(
+  heroIds.map((id) => {
+    return {
+      queryKey: ['super-hero', id],
+      queryFn: () => fetchSuperHero(id),
+    };
+  })
+);
+```
+
+### useInfiniteQuery
 
 - `useQuery` ではなく `useInfiniteQuery` を使用
 - `useInfiniteQuery` の option `getNextPageParam` で infinite 対象 data を制御
@@ -505,4 +506,61 @@ const {
 <button onClick={() => fetchNextPage()} disabled={!hasNextPage}>
   Load more
 </button>
+```
+
+## useMutation
+
+- API POST、UPDATE、DELETE で利用
+- `useMutation`の第一引数に fetcher 関数を指定
+- `useMutation`を返す関数の値で、`mutate`の引数に payload を 渡す
+
+```
+const {
+  data,
+  error,
+  isError,
+  isIdle,
+  isLoading,
+  isPaused,
+  isSuccess,
+  mutate,
+  mutateAsync,
+  reset,
+  status,
+} = useMutation(mutationFn, {
+  mutationKey,
+  onError,
+  onMutate,
+  onSettled,
+  onSuccess,
+  retry,
+  retryDelay,
+  useErrorBoundary,
+  meta,
+})
+
+mutate(variables, {
+  onError,
+  onSettled,
+  onSuccess,
+})
+```
+
+```
+import { useMutation } from 'react-query';
+import axios from 'axios';
+
+const addSuperHero = (hero) => {
+  return axios.post('http://localhost:4000/superheroes', hero);
+};
+
+const useAddSuperHeroData = () => {
+  return useMutation(addSuperHero);
+};
+
+const { mutate } = useAddSuperHeroData();
+
+const handleAddHeroClick = () => {
+  mutate({ name, alterEgo });
+};
 ```
