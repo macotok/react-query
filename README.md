@@ -127,7 +127,7 @@ return (
 - useQuery hook の第一引数に query key
 - 第二引数に fetcher 関数
 - 第三引数に option、configure
-- `useQuery`、`useQueries`、`useInfiniteQuery`は API GET で利用
+- `useQuery`、`useQueries`、`useInfiniteQuery`は API GET Request で利用
 
 ```
 useQuery('super-heroes', () => {
@@ -510,7 +510,7 @@ const {
 
 ## useMutation
 
-- API POST、UPDATE、DELETE で利用
+- API POST、UPDATE、DELETE Request で利用
 - `useMutation`の第一引数に fetcher 関数を指定
 - `useMutation`を返す関数の値で、`mutate`の引数に payload を 渡す
 
@@ -579,6 +579,33 @@ const useAddSuperHeroData = () => {
   return useMutation(addSuperHero, {
     onSuccess: () => {
       queryClient.invalidateQueries('super-heroes');
+    },
+  });
+};
+```
+
+### setQueryData
+
+- 第一引数には query key を指定。第二引数の関数の引数には既存の data が格納される
+- 同期的に data 利用が可能になる。一方で fetchQuery は非同期で data を取得する
+- 複数の query を 1 度に更新時に使用する
+- Chrome の devtool の Network で API GET Request が呼ばれてないことを確認できる
+- さらに data を整形することも可能
+
+```
+import { useMutation, useQueryClient } from 'react-query';
+
+export const useAddSuperHeroData = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation(addSuperHero, {
+    onSuccess: (data) => {
+      queryClient.setQueryData('super-heroes', (oldQueryData) => {
+        return {
+          ...oldQueryData,
+          data: [...oldQueryData.data, data.data],
+        };
+      });
     },
   });
 };
