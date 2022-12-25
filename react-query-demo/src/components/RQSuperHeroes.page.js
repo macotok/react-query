@@ -57,7 +57,9 @@ export const RQSuperHeroesPage = () => {
       {data?.data.map((hero) => {
         return (
           <div key={hero.id}>
-            <Link to={`/rq-super-heroes/${hero.id}`}>{hero.name}</Link>
+            <Link to={`/rq-super-heroes/${hero.id}`}>
+              {hero.id} {hero.name}
+            </Link>
           </div>
         );
       })}

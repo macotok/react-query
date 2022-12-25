@@ -587,7 +587,7 @@ const useAddSuperHeroData = () => {
 ### setQueryData
 
 - 第一引数には query key を指定。第二引数の関数の引数には既存の data が格納される
-- 同期的に data 利用が可能になる。一方で fetchQuery は非同期で data を取得する
+- `setQueryData` で同期的に data 利用が可能になる。一方で fetchQuery は非同期で data を取得する
 - 複数の query を 1 度に更新時に使用する
 - Chrome の devtool の Network で API GET Request が呼ばれてないことを確認できる
 - さらに data を整形することも可能
@@ -609,4 +609,71 @@ export const useAddSuperHeroData = () => {
     },
   });
 };
+```
+
+### Optimistic Updates
+
+Optimistic Update について
+
+```
+SPAでAPIを利用しデータを更新しその結果を画面に反映させる場合、APIのレスポンスを待つ必要があります。
+しかし、レスポンスを待ってから画面に反映すると、ユーザーが操作してから画面に反映されるまでに時間がかかり、UXが悪くなってしまいます。
+そんな悩みを解決するのがOptimistic Updateです。
+
+想定結果を反映する
+Optimistic UpdateはAPIのレスポンスを待たずに想定する結果を画面に反映してしまいます。
+これによってユーザーの操作後すぐ画面に反映されます。
+またAPIのレスポンスが返ってきたら再度画面に反映します。
+2度画面の更新が発生するので、画面のチラツキが発生する可能性はありますが、想定したとおりのレスポンスが返ってきたら、画面上変化はなくユーザーにはわかりません。
+```
+
+引用元: [Optimistic Update (楽観的更新)でストレスのない UX を実現する](https://zenn.dev/funteractiveinc/articles/optimistic-update)
+
+- React Query で `Optimistic Update` を組み込むには `onMutate` を使う
+- `useQueryClient`関数のメソッド`cancelQueries`、`getQueryData`、`setQueryData`、`invalidateQueries`を用いて、data set とエラーのハンドリングを行う
+
+onMutate について
+
+```
+onMutateはmutation関数が起動される前に起動する。
+mutationが成功することを期待して、リソースに対して `Optimistic Update` を行うのに便利です。
+仮にmutationが失敗した場合、 onError に。 onSettled にエラー時、またはdata setのdataが渡され、`Optimistic Update` をロールバックするのに便利です。
+```
+
+```
+const addSuperHero = (hero) => {
+  return axios.post('http://localhost:4000/superheroes', hero);
+};
+
+const useAddSuperHeroData = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation(addSuperHero, {
+    onMutate: async (newHero) => {
+      await queryClient.cancelQueries('super-heroes');
+      const previousHeroData = queryClient.getQueryData('super-heroes');
+      queryClient.setQueryData('super-heroes', (oldQueryData) => {
+        return {
+          ...oldQueryData,
+          data: [
+            ...oldQueryData.data,
+            { id: oldQueryData?.data?.length + 1, ...newHero },
+          ],
+        };
+      });
+      return { previousHeroData };
+    },
+    onError: (_err, _newTodo, context) => {
+      queryClient.setQueryData('super-heroes', context.previousHeroData);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries('super-heroes');
+    },
+  });
+};
+
+const { isLoading, data, isError, error } = useSuperHeroesData(
+  onSuccess,
+  onError
+);
 ```
