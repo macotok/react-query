@@ -379,53 +379,57 @@ return (
 
 ### Query By Id
 
-- 詳細画面の data を fetch するとき、`useQuery` の query key は配列で扱い、一意とする。例：`['super-hero', heroId]`
+- 詳細画面の data を fetch するとき、`useQuery` の query key を配列で扱う。例：`['user', userId]`
 - 第二引数の fetcher 関数の扱いが 2 通りある
   1. fetcher 関数の引数で queryKey を取得
   2. 第二引数に関数を作成して そこで fetcher 関数を書く
 
-```
-const fetchSuperHero = ({ queryKey }) => {
-  const heroId = queryKey[1];
-  return axios.get(`http://localhost:4000/superheroes/${heroId}`);
-};
-
-export const useSuperHeroData = (heroId) => {
-  return useQuery(['super-hero', heroId], fetchSuperHero);
-};
-```
+パターン 1
 
 ```
-const fetchSuperHero = (heroId) => {
-  return axios.get(`http://localhost:4000/superheroes/${heroId}`);
+const fetchUser = ({ queryKey }) => {
+  const userId = queryKey[1];
+  return axios.get(`http://localhost:4000/users/${userId}`);
 };
 
-export const useSuperHeroData = (heroId) => {
-  return useQuery(['super-hero', heroId], () => fetchSuperHero(heroId));
+const userData = (userId) => {
+  return useQuery(['user', userId], fetchUser);
+};
+```
+
+パターン 2
+
+```
+const fetchUser = (userId) => {
+  return axios.get(`http://localhost:4000/users/${userId}`);
+};
+
+const userData = (userId) => {
+  return useQuery(['user', userId], () => fetchUser(userId));
 };
 ```
 
 ### Initial Query Data
 
-- 詳細画面の data を一覧画面の data を元に初期値として取得する
+- 詳細画面の data を一覧画面の data を元に初期値として設定する
 - `useQuery` の option `initialData` で data を取得する処理を記述
 - `useQueryClient` で取得対象の `queryKey` を指定して data を取得
 
 ```
-const fetchSuperHero = ({ queryKey }) => {
-  const heroId = queryKey[1];
-  return axios.get(`http://localhost:4000/superheroes/${heroId}`);
+const fetchUser = ({ queryKey }) => {
+  const userId = queryKey[1];
+  return axios.get(`http://localhost:4000/users/${userId}`);
 };
 
 const queryClient = useQueryClient();
 
-useQuery(['super-hero', heroId], fetchSuperHero, {
+useQuery(['user', userId], fetchUser, {
   initialData: () => {
-    const hero = queryClient
-      .getQueryData('super-heroes')
-      ?.data?.find((hero) => hero.id === parseInt(heroId));
-    if (hero) {
-      return { data: hero };
+    const user = queryClient
+      .getQueryData('users')
+      ?.data?.find((user) => user.id === parseInt(userId));
+    if (user) {
+      return { data: user };
     }
     return undefined;
   },
@@ -435,14 +439,14 @@ useQuery(['super-hero', heroId], fetchSuperHero, {
 ### Paginated Queries
 
 - `useQuery` の `queryKey` にページ番号を指定するだけ
-- `useQuery` の option `keepPreviousData` を `true` で、取得済みの data を表示する
+- `useQuery` の option `keepPreviousData` を `true` にすると、取得済みの data を表示
 
 ```
 const [pageNumber, setPageNumber] = useState(1);
 
 const { isLoading, isError, error, data, isFetching } = useQuery(
-  ['colors', pageNumber],
-  () => fetchColors(pageNumber),
+  ['users', pageNumber],
+  () => fetchUsers(pageNumber),
   {
     keepPreviousData: true,
   }
@@ -452,19 +456,19 @@ const { isLoading, isError, error, data, isFetching } = useQuery(
 ## useQueries
 
 - 複数の useQuery に対応
-- 返り値の `queryKey`に queryKey を。`queryFn`に fetcher 関数を。option は `useQuery` と同等
+- 返り値の `queryKey`に queryKey を、`queryFn`に fetcher 関数を、option は `useQuery` と同等
 - response data は配列となる
 
 ```
-const fetchSuperHero = (heroId) => {
-  return axios.get(`http://localhost:4000/superheroes/${heroId}`);
+const fetchUser = (userId) => {
+  return axios.get(`http://localhost:4000/users/${userId}`);
 };
 
 const queryResults = useQueries(
-  heroIds.map((id) => {
+  userIds.map((userId) => {
     return {
-      queryKey: ['super-hero', id],
-      queryFn: () => fetchSuperHero(id),
+      queryKey: ['user', userId],
+      queryFn: () => fetchUser(userId),
     };
   })
 );
@@ -472,23 +476,23 @@ const queryResults = useQueries(
 
 ### useInfiniteQuery
 
-- `useQuery` ではなく `useInfiniteQuery` を使用
-- `useInfiniteQuery` の option `getNextPageParam` で infinite 対象 data を制御
-  - fetcher 関数の引数にページ番号の `pageParams`が入る
-  - `useInfiniteQuery`の値`hasNextPage` で button の disabled 判定を行う
-  - `useInfiniteQuery`の値`fetchNextPage` で fetch 処理を行う
-- 取得した data は `data?.pages.map((group)` と `pages` で map を回すので注意
+- `useQuery` の替わりとして `useInfiniteQuery` を使用
+- `useInfiniteQuery` の option `getNextPageParam` で infinite 対象の data を制御
+  - fetcher 関数の引数に、ページ番号の `pageParam`が入る
+  - `useInfiniteQuery`で取得する値 `hasNextPage` で button の disabled 判定を行う
+  - `useInfiniteQuery`で取得する値 `fetchNextPage` で fetch 処理を行う
+- 取得した data は `data?.pages.map((group)` の `pages` で map を回すので注意
 
 ```
-const fetchColors = ({ pageParam = 1 }) => {
-  return axios.get(`http://localhost:4000/colors?_limit=2&_page=${pageParam}`);
+const fetchUsers = ({ pageParam = 1 }) => {
+  return axios.get(`http://localhost:4000/users?_limit=2&_page=${pageParam}`);
 };
 
 const {
   data,
   fetchNextPage,
   hasNextPage,
-} = useInfiniteQuery(['colors'], fetchColors, {
+} = useInfiniteQuery(['users'], fetchUsers, {
   getNextPageParam: (lastPage, pages) => {
     if (pages.length < 4) {
       return pages.length + 1;
@@ -501,10 +505,8 @@ const {
 {data?.pages.map((group, i) => {
   return (
     <Fragment key={i}>
-      {group.data.map((color) => (
-        <h2 key={color.id}>
-          {color.id} {color.label}
-        </h2>
+      {group.data.map((user) => (
+        <div key={user.id}>{user.name}</div>
       ))}
     </Fragment>
   );
@@ -517,7 +519,7 @@ const {
 
 ## useMutation
 
-- API POST、UPDATE、DELETE Request で利用
+- API の POST、UPDATE、DELETE Request で利用
 - `useMutation`の第一引数に fetcher 関数を指定
 - `useMutation`を返す関数の値で、`mutate`の引数に payload を 渡す
 
@@ -557,18 +559,18 @@ mutate(variables, {
 import { useMutation } from 'react-query';
 import axios from 'axios';
 
-const addSuperHero = (hero) => {
-  return axios.post('http://localhost:4000/superheroes', hero);
+const addUser = (user) => {
+  return axios.post('http://localhost:4000/users', user);
 };
 
-const useAddSuperHeroData = () => {
-  return useMutation(addSuperHero);
+const useAddUserData = () => {
+  return useMutation(adduser);
 };
 
-const { mutate } = useAddSuperHeroData();
+const { mutate } = useAddUserData();
 
-const handleAddHeroClick = () => {
-  mutate({ name, alterEgo });
+const handleClick = () => {
+  mutate({ name, age });
 };
 ```
 
