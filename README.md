@@ -5,18 +5,19 @@
 What？
 
 - React アプリケーションの data fetching ライブラリ
+- React および React Native アプリケーションのデータを、「グローバル state」に触れることなくフェッチ、キャッシュ、アップデートできます。
 
 Why?
 
-- React では data fetch を定義してない
-- useEffect hook で data fetch を行い、useState に data、isLoading、error を格納
-- data をアプリ全体で使うには、状態管理ライブラリを利用する必要がある
-- 状態管理ライブラリは静的なデータを扱うには適している
-- 一方で、非同期処理を扱うには適していない、そのため middleware ライブラリが別途必要
+- React 単体で fetch してその data を扱うには `useEffect`内で data fetch を行い、`useState` に data、isLoading、error を管理する
+- ただし、近い将来 Raect の新しい API `use` で data fetch を扱うことできる？
+- もし data をアプリケーション全体で扱うには、Redux や Recoil などの状態管理ライブラリを利用する
+- 状態管理ライブラリは静的なデータを扱うには適しているが、非同期処理を扱うには適していない、そのため middleware ライブラリが別途必要
 
 Feature
 
-- cache が効くので既に fetch した data は、cache された data から取り出す。もし data が更新されたら background で refetch して新しい data を表示する。 `isFetching` で確認できる
+- cache が効くので、既に fetch した data は cache された data から取り出す。
+- もし data が更新されたら background で refetch して、新しい data を表示する。 `isFetching` で確認できる
 
 ## Client vs Server State
 
@@ -44,7 +45,7 @@ Server State
 12. Optimistic updates
 13. Axios Interceptor
 
-## 従来の fetching data
+## 従来の data fetching
 
 ```
 const [isLoading, setIsLoading] = useState(true);
@@ -53,7 +54,7 @@ const [error, setError] = useState('')
 
 useEffect(() => {
   axios
-    .get('http://localhost:4000/superheroes')
+    .get('http://localhost:4000/users')
     .then((res) => {
       setData(res.data);
       setIsLoading(false);
@@ -69,13 +70,13 @@ if (isLoading) {
 }
 
 if (error) {
-    return <h2>{error}</h2>;
-  }
+  return <h2>{error}</h2>;
+}
 
 return (
   <>
-    {data.map((hero) => {
-      return <div key={hero.id}>{hero.name}</div>;
+    {data.map((user) => {
+      return <div key={user.id}>{user.name}</div>;
     })}
   </>
 );
@@ -106,8 +107,8 @@ function App() {
 
 - react-query 専門の開発ツール
 - react-query の内部構造を可視化するので、デバッグにも有用
-- React Native はサポートしていない
-- デフォルトで `process.env.NODE_ENV === 'development'` のときのみバンドルするように設定されている
+- React Native はサポートされていない
+- デフォルトで `process.env.NODE_ENV === 'development'` のみ bundle するよう設定されている
 
 ```
 import { ReactQueryDevtools } from 'react-query/devtools';
@@ -124,18 +125,18 @@ return (
 
 ## useQuery
 
-- useQuery hook の第一引数に query key
-- 第二引数に fetcher 関数
-- 第三引数に option、configure
-- `useQuery`、`useQueries`、`useInfiniteQuery`は API GET Request で利用
+- `useQuery` で第一引数には query key を。第二引数に fetcher 関数。第三引数に option、configure を指定
+- query key は一意とする
+- `useQuery`、`useQueries`、`useInfiniteQuery`は API GET Request 時に使用する
+- 公式 doc「[useQuery](https://react-query-v3.tanstack.com/reference/useQuery)」
 
 ```
-useQuery('super-heroes', () => {
-  return axios.get('http://localhost:4000/superheroes')
+useQuery('users', () => {
+  return axios.get('http://localhost:4000/users')
 })
 ```
 
-- useQuery hook で返ってくる値([公式](https://react-query-v3.tanstack.com/reference/useQuery#_top))
+`useQuery` を実行して返ってくる値
 
 ```
 const {
@@ -163,11 +164,11 @@ const {
 } = useQuery
 ```
 
-### use-query で fetching data
+### use-query で data fetching
 
 ```
-const { isLoading, data, isError, error } = useQuery('super-heroes', () => {
-  return axios.get('http://localhost:4000/superheroes');
+const { isLoading, data, isError, error } = useQuery('users', () => {
+  return axios.get('http://localhost:4000/users');
 });
 
 if (isLoading) {
@@ -180,8 +181,8 @@ if (isError) {
 
 return (
   <>
-    {data?.data.map((hero) => {
-      return <div key={hero.id}>{hero.name}</div>;
+    {data?.data.map((user) => {
+      return <div key={user.id}>{user.name}</div>;
     })}
   </>
 );
@@ -193,30 +194,34 @@ return (
 - default の cache time は `5 minutes`
 
 ```
-const fetchSuperHeroes = () => {
-  return axios.get('http://localhost:4000/superheroes');
+const fetchUsers = () => {
+  return axios.get('http://localhost:4000/users');
 };
 
 const { isLoading, data, isError, error } = useQuery(
-  'super-heroes',
-  fetchSuperHeroes,
+  'users',
+  fetchUsers,
   {
-    cacheTime: 5000, // default 5 minutes
+    cacheTime: 5000,
   }
 );
 ```
 
 ### stale time
 
-- refetch する時間を指定。時間内では fetch せずにキャッシュのデータを返す
-- default の stale time は `0`
+- refetch する時間を指定。指定した時間内では fetch せずにキャッシュのデータを返す
+- default の stale time は `0`。マウントされるとすぐに再取得される。
 
 ```
+const fetchUsers = () => {
+  return axios.get('http://localhost:4000/users');
+};
+
 const { isLoading, data, isError, error } = useQuery(
-  'super-heroes',
-  fetchSuperHeroes,
+  'users',
+  fetchUsers,
   {
-    staleTime: 30000, // default 0
+    staleTime: 30000,
   }
 );
 ```
@@ -227,9 +232,13 @@ const { isLoading, data, isError, error } = useQuery(
 - refetchOnMount -> default `true`
 
 ```
+const fetchUsers = () => {
+  return axios.get('http://localhost:4000/users');
+};
+
 const { isLoading, data, isError, error } = useQuery(
-  'super-heroes',
-  fetchSuperHeroes,
+  'users',
+  fetchUsers,
   {
     refetchOnWindowFocus: false,
     refetchOnMount: false,
@@ -239,13 +248,12 @@ const { isLoading, data, isError, error } = useQuery(
 
 ### refetch interval
 
-- refetchInterval
-- refetchIntervalInBackground -> refetchInterval を設定した場合、ブラウザのタブ/ウィンドウがバックグラウンドにある間、refetch を行う
+- refetchIntervalInBackground を `true`にして、 refetchInterval を設定した場合、ブラウザのタブ/ウィンドウがバックグラウンドにある間、refetchInterval で指定した時間ごとに refetch を行う
 
 ```
 const { isLoading, data, isError, error } = useQuery(
-  'super-heroes',
-  fetchSuperHeroes,
+  'users',
+  fetchUsers,
   {
     refetchInterval: 2000,
     refetchIntervalInBackground: true
@@ -256,47 +264,44 @@ const { isLoading, data, isError, error } = useQuery(
 ### useQuery on click
 
 - click 時のみ data fetch する処理
-- option で `enabled`　を `false` に指定すると通常は fetch しない処理
-- click イベントに `refetch` を指定すると click 時に data fetch が行われる
+- option で `enabled`　を `false` に指定すると、通常は fetch しない
+- click イベントに `refetch` を指定すると、 click 時に data fetch する
 - loading 表示は `isFetching` で制御する
 
 ```
-const fetchSuperHeroes = () => {
-  return axios.get('http://localhost:4000/superheroes');
+const fetchUsers = () => {
+  return axios.get('http://localhost:4000/users');
 };
 
-export const RQSuperHeroesPage = () => {
-  const { isLoading, data, isError, error, refetch, isFetching } = useQuery(
-    'super-heroes',
-    fetchSuperHeroes,
-    {
-      enabled: false,
-    }
-  );
-
-  if (isLoading || isFetching) {
-    return <h2>Loading...</h2>;
+const { isLoading, data, isError, error, refetch, isFetching } = useQuery(
+  'users',
+  fetchUsers,
+  {
+    enabled: false,
   }
+);
 
-  if (isError) {
-    return <h2>{error.message}</h2>;
-  }
+if (isLoading || isFetching) {
+  return <h2>Loading...</h2>;
+}
 
-  return (
-    <>
-      <h2>React Query Super Heroes Page</h2>
-      <button onClick={refetch}>fetch</button>
-      {data?.data.map((hero) => {
-        return <div key={hero.id}>{hero.name}</div>;
-      })}
-    </>
-  );
-};
+if (isError) {
+  return <h2>{error.message}</h2>;
+}
+
+return (
+  <>
+    <button onClick={refetch}>fetch</button>
+    {data?.data.map((user) => {
+      return <div key={user.id}>{user.name}</div>;
+    })}
+  </>
+);
 ```
 
 ### Dependent Queries
 
-- 複数の fetcher function で、お互いが依存してる場合に option の`enabled` を利用して fetch を制御する
+- 複数の fetcher 関数で、お互いが依存してる場合に option の`enabled` を利用して fetch を制御する
 
 ```
 const { data: user } = useQuery(['user', email], () =>
@@ -316,73 +321,68 @@ const { data } = useQuery(
 
 ### Success and Error Callbacks
 
-- option に `onSuccess`、`onError` で data fething を受けてのハンドリング処理を行う。例えば toast を表示、ダイアログを表示、一覧を更新など
+- option に `onSuccess`、`onError` で data fetch した結果のハンドリングを行う。例えば toast を表示、ダイアログを表示、一覧を更新など
 - callback 関数の引数にはそれぞれ `data`、`error`が入る
 
 ```
-const fetchSuperHeroes = () => {
-  return axios.get('http://localhost:4000/superheroes');
+const fetchUsers = () => {
+  return axios.get('http://localhost:4000/users');
 };
 
-export const RQSuperHeroesPage = () => {
-  const onSuccess = (data) => {
-    console.log({ data }); // Axios Response
-  };
-
-  const onError = (error) => {
-    console.log({ error }); // Axios Error
-  };
-
-  const { isLoading, data, isError, error } = useQuery(
-    'super-heroes',
-    fetchSuperHeroes,
-    {
-      onSuccess,
-      onError,
-    }
-  );
+const onSuccess = (data) => {
+  console.log({ data }); // Axios Response
 };
+
+const onError = (error) => {
+  console.log({ error }); // Axios Error
+};
+
+const { isLoading, data, isError, error } = useQuery(
+  'users',
+  fetchUsers,
+  {
+    onSuccess,
+    onError,
+  }
+);
 ```
 
 ### Data Transformation
 
-- option の `select` メソッドの引数に fetch の response data が入る
-- その data を処理して返した値が useQuery が返す `data` となる
+- option `select` の引数に data fetch の response data が入る
+- その data を扱って、返す値が `useQuery` の `data` となる
 
 ```
-const fetchSuperHeroes = () => {
- return axios.get('http://localhost:4000/superheroes');
+const fetchUsers = () => {
+ return axios.get('http://localhost:4000/users');
 };
 
-export const RQSuperHeroesPage = () => {
- const { isLoading, data, isError, error } = useQuery(
-   'super-heroes',
-   fetchSuperHeroes,
-   {
-     select: (data) => {
-       const superHeroNames = data.data.map((hero) => hero.name);
-       return superHeroNames;
-     },
-   }
- );
+const { isLoading, data, isError, error } = useQuery(
+  'users',
+  fetchUsers,
+  {
+    select: (data) => {
+      const userNames = data.data.map((user) => user.name);
+      return userNames;
+    },
+  }
+);
 
- return (
-   <>
-     <h2>React Query Super Heroes Page</h2>
-     {data.map((heroName) => {
-       return <div key={heroName}>{heroName}</div>;
-     })}
-   </>
- );
-};
+return (
+  <>
+    {data.map((userName) => {
+      return <div key={userName}>{userName}</div>;
+    })}
+  </>
+);
 ```
 
 ### Query By Id
 
-- 詳細画面の data を fetch するとき、useQuery の第一引数を配列にして queryKey とする。例：`['super-hero', heroId]`
-- 第二引数の fetcher 関数で dynamic ID を指定
-  - fetcher 関数の引数で useQuery の第一引数の queryKey から取得
-  - 高階関数で fetcher 関数を定義
+- 詳細画面の data を fetch するとき、`useQuery` の query key は配列で扱い、一意とする。例：`['super-hero', heroId]`
+- 第二引数の fetcher 関数の扱いが 2 通りある
+  1. fetcher 関数の引数で queryKey を取得
+  2. 第二引数に関数を作成して そこで fetcher 関数を書く
 
 ```
 const fetchSuperHero = ({ queryKey }) => {
@@ -407,12 +407,18 @@ export const useSuperHeroData = (heroId) => {
 
 ### Initial Query Data
 
-- 詳細画面の data を一覧画面の data から初期値として取得する
-- useQuery の option `initialData` で data を取得する処理を記述
-- `useQueryClient` で取得対象の queryKey を指定して data を取得
+- 詳細画面の data を一覧画面の data を元に初期値として取得する
+- `useQuery` の option `initialData` で data を取得する処理を記述
+- `useQueryClient` で取得対象の `queryKey` を指定して data を取得
 
 ```
+const fetchSuperHero = ({ queryKey }) => {
+  const heroId = queryKey[1];
+  return axios.get(`http://localhost:4000/superheroes/${heroId}`);
+};
+
 const queryClient = useQueryClient();
+
 useQuery(['super-hero', heroId], fetchSuperHero, {
   initialData: () => {
     const hero = queryClient
@@ -428,11 +434,12 @@ useQuery(['super-hero', heroId], fetchSuperHero, {
 
 ### Paginated Queries
 
-- useQuery の `queryKey` にページ番号を指定するだけ
-- useQuery の option `keepPreviousData` を `true` で取得済みの data を表示
+- `useQuery` の `queryKey` にページ番号を指定するだけ
+- `useQuery` の option `keepPreviousData` を `true` で、取得済みの data を表示する
 
 ```
 const [pageNumber, setPageNumber] = useState(1);
+
 const { isLoading, isError, error, data, isFetching } = useQuery(
   ['colors', pageNumber],
   () => fetchColors(pageNumber),
@@ -445,8 +452,8 @@ const { isLoading, isError, error, data, isFetching } = useQuery(
 ## useQueries
 
 - 複数の useQuery に対応
-- 返り値の `queryKey`に queryKey、 `queryFn`に fetcher function、option は `useQuery` と同等
-- response data を配列として返す
+- 返り値の `queryKey`に queryKey を。`queryFn`に fetcher 関数を。option は `useQuery` と同等
+- response data は配列となる
 
 ```
 const fetchSuperHero = (heroId) => {
@@ -677,3 +684,7 @@ const { isLoading, data, isError, error } = useSuperHeroesData(
   onError
 );
 ```
+
+## 参考サイト
+
+- [React Query Tutorial for Beginners](https://www.youtube.com/playlist?list=PLC3y8-rFHvwjTELCrPrcZlo6blLBUspd2)
