@@ -739,3 +739,4 @@ const useAddUserData = () => {
 
 - [React Query Tutorial for Beginners](https://www.youtube.com/playlist?list=PLC3y8-rFHvwjTELCrPrcZlo6blLBUspd2)
 - [【React】React Query の useMutation()でデータ更新を行う(Optimistic Update, invalidateQueries, AbortController)](https://qiita.com/suzuki0430/items/1812e600797bba661cef)
+- [React Query: Beyond the Basics](https://javascript.plainenglish.io/react-query-beyond-basics-f43149c7a36a)
