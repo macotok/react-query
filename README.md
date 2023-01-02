@@ -319,6 +319,24 @@ const { data } = useQuery(
 );
 ```
 
+### other uses of enabled
+
+- 特定の値を取得したときに fetch する
+
+```
+const { id } = useParams();
+
+const { isLoading, isError, data } = useQuery(
+  ['user', id],
+  () => {
+    return axios.get(`http://localhost:4000/users/${id}`);
+  },
+  {
+    enabled: !!id,
+  }
+);
+```
+
 ### Success and Error Callbacks
 
 - option に `onSuccess`、`onError` で data fetch した結果のハンドリングを行う。例えば toast を表示、ダイアログを表示、一覧を更新など
@@ -523,6 +541,16 @@ const {
 - `useMutation`の第一引数に fetcher 関数を指定
 - `useMutation`を返す関数の値で、`mutate`の引数に payload を 渡す
 
+### useQuery の違い
+
+- cache がない
+- retry しない
+- refetch しない
+- mutate 関数を返す
+- onMutate というコールバックがある(Optimistic Update のために使う)
+
+### 使用例
+
 ```
 const {
   data,
@@ -576,11 +604,17 @@ const handleClick = () => {
 
 ### Query invalidation
 
-- query を無効化する
-- `useQueryClient` で特定の query key を指定する
+- mutation で更新したデータを再取得する場合、取得済みのキャッシュを明示的に破棄する
+- データ再フェッチのトリガーとする
+- `useQueryClient` で対象の query key を指定する
+- `useMutation`のオプション `onSettled` で `invalidateQueries`を使用して query key を指定すると、その query のキャッシュが古くなったとみなす
 
 ```
 import { useMutation, useQueryClient } from 'react-query';
+
+const addUser = (user) => {
+  return axios.post('http://localhost:4000/users', user);
+};
 
 const useAddUserData = () => {
   const queryClient = useQueryClient();
@@ -590,6 +624,12 @@ const useAddUserData = () => {
       queryClient.invalidateQueries('users');
     },
   });
+};
+
+const { mutate } = useAddUserData();
+
+const handleClick = () => {
+  mutate({ name, age });
 };
 ```
 
@@ -604,7 +644,11 @@ const useAddUserData = () => {
 ```
 import { useMutation, useQueryClient } from 'react-query';
 
-export const useAddUserData = () => {
+const addUser = (user) => {
+  return axios.post('http://localhost:4000/users', user);
+};
+
+const useAddUserData = () => {
   const queryClient = useQueryClient();
 
   return useMutation(addUser, {
@@ -617,6 +661,12 @@ export const useAddUserData = () => {
       });
     },
   });
+};
+
+const { mutate } = useAddUserData();
+
+const handleClick = () => {
+  mutate({ name, age });
 };
 ```
 
@@ -683,13 +733,9 @@ const useAddUserData = () => {
     },
   });
 };
-
-const { isLoading, data, isError, error } = useUsersData(
-  onSuccess,
-  onError
-);
 ```
 
 ## 参考サイト
 
 - [React Query Tutorial for Beginners](https://www.youtube.com/playlist?list=PLC3y8-rFHvwjTELCrPrcZlo6blLBUspd2)
+- [【React】React Query の useMutation()でデータ更新を行う(Optimistic Update, invalidateQueries, AbortController)](https://qiita.com/suzuki0430/items/1812e600797bba661cef)
