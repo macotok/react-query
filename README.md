@@ -5,45 +5,19 @@
 What？
 
 - React アプリケーションの data fetching ライブラリ
-- React および React Native アプリケーションのデータを、「グローバル state」に触れることなくフェッチ、キャッシュ、アップデートできます。
+- React および React Native アプリケーションのデータを、global state に触れることなくフェッチ、キャッシュ、アップデートできる
 
 Why?
 
-- React 単体で fetch してその data を扱うには `useEffect`内で data fetch を行い、`useState` に data、isLoading、error を管理する
+- React 単体では `useEffect`内で data fetch を行い、`useState` で response data、isLoading、error を管理する
 - ただし、近い将来 Raect の新しい API `use` で data fetch を扱うことできる？
 - もし data をアプリケーション全体で扱うには、Redux や Recoil などの状態管理ライブラリを利用する
-- 状態管理ライブラリは静的なデータを扱うには適しているが、非同期処理を扱うには適していない、そのため middleware ライブラリが別途必要
+- Redux で非同期処理を扱うには redux-saga、redux-thunk などの middleware ライブラリが別途必要
 
 Feature
 
-- cache が効くので、既に fetch した data は cache された data から取り出す。
-- もし data が更新されたら background で refetch して、新しい data を表示する。 `isFetching` で確認できる
-
-## Client vs Server State
-
-Client State
-
-- 同期処理を受けて data を取得、更新
-
-Server State
-
-- 非同期処理で data を取得、更新
-
-## 目次
-
-1.  Basic queries
-2.  Poll data
-3.  RQ dev tools
-4.  Create reusable query hooks
-5.  Query by ID
-6.  Parallel queries
-7.  Dynamic queries
-8.  Dependent queries
-9.  Infinite & paginated queries
-10. Update data using mutations
-11. Invalidate queries
-12. Optimistic updates
-13. Axios Interceptor
+- cache が効くので、既に fetch した data は cache data から取り出す
+- もし data が更新されたら background で refetch して、新しい data を表示
 
 ## 従来の data fetching
 
