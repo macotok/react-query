@@ -634,6 +634,7 @@ const useAddUserData = () => {
         };
       });
     },
+    onError: () => {}
   });
 };
 
